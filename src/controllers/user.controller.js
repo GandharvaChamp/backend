@@ -1,6 +1,8 @@
 import { asycHandler } from "../utils/asycHandler.js";
 import ApiError from "../utils/ApiError.js"
 import User from "../models/user.model.js"
+import uploadOnCloudinary from "../utils/cloudinary.js";
+import {ApiResponse} from "../utils/ApiResponse.js"
 // get user from frontend 
     // validation - not empty 
     // check for user already exists: username, email
@@ -27,7 +29,7 @@ const registerUser = asycHandler(async (req,res)=>{
     console.log("email: ", email)
         console.log(" Incoming user data:", { fullName, email, username, password });
 
-    
+    // Check wheather every feild is filled
     if([fullName,email,username,password].some((feild)=> feild?.trim==="")){
         console.log("One or more fields are empty");
         throw new ApiError(400, "All feilds required")
@@ -43,9 +45,43 @@ const registerUser = asycHandler(async (req,res)=>{
         throw new ApiError(409, "UserName or email already exists")
     }
 
-    req.files?.avatar[0]?.path
+    const avatarLocalPath= req.files?.avatar[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
+    if(!avatarLocalPath){
+        throw new ApiError(400,"Avatar file is required")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    const coverImage=  await uploadOnCloudinary(coverImageLocalPath)
+
+    if(!avatar){
+        throw new ApiError(400,"Avatar file is required")
+    }
+
+    // create user object - create entry in db
+    const user = await User.create({
+        fullName,
+        avatar: avatar.url,
+        coverImage: coverImage?.url || "",
+        email,
+        password,
+        username: username.toLowerCase()
+    })
+
+    const createdUser  = await User.findById(user._id).select(
+        "-password -refreshToken"  // things not to include
+    )
+
+    if(!createdUser){
+        throw new ApiError(500 , "something went wrong while registering the User")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(200 , createdUser , "User register sucessfully")
+    )
     
 })
 
-export {registerUser}
+export default registerUser
