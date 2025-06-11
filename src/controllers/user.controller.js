@@ -1,4 +1,4 @@
-import { asycHandler } from "../utils/asycHandler.js";
+import  asycHandler  from "../utils/asycHandler.js";
 import ApiError from "../utils/ApiError.js"
 import User from "../models/user.model.js"
 import uploadOnCloudinary from "../utils/cloudinary.js";
@@ -24,13 +24,15 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 
 const registerUser = asycHandler(async (req,res)=>{
     
+    console.log("req.files =", req.files);
+    console.log("req.body =", req.body);
 
     const{fullName, email, username, password} = req.body
     console.log("email: ", email)
         console.log(" Incoming user data:", { fullName, email, username, password });
 
     // Check wheather every feild is filled
-    if([fullName,email,username,password].some((feild)=> feild?.trim==="")){
+    if([fullName,email,username,password].some((feild)=> feild?.trim()==="")){
         console.log("One or more fields are empty");
         throw new ApiError(400, "All feilds required")
     }
@@ -47,16 +49,18 @@ const registerUser = asycHandler(async (req,res)=>{
 
     const avatarLocalPath= req.files?.avatar[0]?.path;
     const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    console.log("Received files:", req.files);
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is required")
-    }
-
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
-
+   }
+   
+    // I will get cloudinary url here
+    const avatar = await uploadOnCloudinary(avatarLocalPath) 
     const coverImage=  await uploadOnCloudinary(coverImageLocalPath)
-
+    
     if(!avatar){
+        console.log("Received files:", req.files);
         throw new ApiError(400,"Avatar file is required")
     }
 
@@ -73,7 +77,7 @@ const registerUser = asycHandler(async (req,res)=>{
     const createdUser  = await User.findById(user._id).select(
         "-password -refreshToken"  // things not to include
     )
-
+    
     if(!createdUser){
         throw new ApiError(500 , "something went wrong while registering the User")
     }

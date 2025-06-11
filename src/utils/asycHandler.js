@@ -6,7 +6,7 @@ const asycHandler = (requestHandler)=>{
 }
 
 
-export {asycHandler}
+export default asycHandler
 
 /*const asynHandler=(fn)=>async (req,res,next)=>{
 
