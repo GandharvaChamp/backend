@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser"
 import multer from "multer"
 const app = express()
 
+app.use(cookieParser());
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials :true

@@ -11,3 +11,13 @@ required configurations(app.use)  in app.js
 
 utils* -> asyncHandler
 
+
+
+
+
+** Questions **
+1. what is jwt tokens why they are used 
+2. what is refresh token and access token and why they are used
+3. what is cookie why they are used 
+4. who is req.user
+5. 
